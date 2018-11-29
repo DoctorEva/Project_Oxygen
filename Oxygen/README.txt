@@ -10,6 +10,7 @@ _____________________________________
 Welcome to Oxygen, 
 your goal is to produce enough oxygen to grow your colony!
 TUTORIAL:
+	To win, grow your colony to 20 colonists. Don't run out of Oxygen.
 	
 _____________________________________
 
