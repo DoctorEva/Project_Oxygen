@@ -97,6 +97,7 @@ protected:
     std::vector<std::string> HighScores;
     //______________ OXYGEN STUFF _____________________
     int coal, oxygen, raw_metal, ref_metal, day;
+    string player_name;
     std::vector<Colonist*> Colonists;
     std::vector<Generator> Generators;
     Batteries BB;

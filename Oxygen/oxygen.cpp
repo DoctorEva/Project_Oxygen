@@ -87,6 +87,10 @@ void ColonyWindow::end_game()
       Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: %d.",day);
       dialog.run();
+      string new_record = player_name + '_'+std::to_string(day);
+      HighScores.push(new_record);
+      //To do - output sorted High Scores to screen..
+      //To do - output High Scores to file.
       ColonyWindow::close();
     }
 }
@@ -97,6 +101,7 @@ Colonist::Colonist(string name, int* Coal, int* Oxygen) // Tommy
   CoalPtr = Coal;
   OxygenPtr = Oxygen;
   stress = 0;
+  *this->name = name;
 }
 Colonist::~Colonist()
 {
