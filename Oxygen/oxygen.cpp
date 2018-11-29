@@ -4,36 +4,8 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-/* This function opens a file prompter. Uncomment to implement a load game
-std::string Window::openfile(std::string prompt)
-{
-  Gtk::FileChooserDialog dialog(prompt, Gtk::FILE_CHOOSER_ACTION_OPEN);
-  //dialog.set_transient_for(*this);
-  dialog.add_button("_Cancel", Gtk::RESPONSE_CANCEL);
-  dialog.add_button("_Open", Gtk::RESPONSE_OK);
-  int result = dialog.run();
-  std::string ReturnValue;
-  switch(result)
-    {
-    case(Gtk::RESPONSE_OK):
-      {
-	ReturnValue = dialog.get_filename();
-	break;
-      }
-    case(Gtk::RESPONSE_CANCEL):
-      {
-	std::cout<<"Canceled File Dialog."<<std::endl;
-	break;
-      }
-    default:
-      {
-	std::cout<<"File Dialog did something weird."<<std::endl;
-	break;
-      }
-    }
-  return ReturnValue;
-}
-*/
+
+//____________ Colony Window Class Implementations___________________
 std::vector<std::string> ColonyWindow::read_file(std::string filename)
 {
   std::vector<std::string> all;
@@ -84,10 +56,13 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     Gtk::MessageDialog dialog(*this, "You are in charge of leading a small space colony!\n", false, Gtk::MESSAGE_INFO);
     dialog.set_secondary_text("To survive, you must produce power and create enough oxygen to breathe and grow, good luck Boss!\n\nRead the README for a tutorial on mechanics!");
     dialog.run();
-
+    //____________________OXYGEN STUFF___________________
     coal = 0;
-    Person.CoalPtr = &coal;
-    Person.add_coal(10);
+    oxygen = 100;
+    raw_metal = 0;
+    ref_metal = 0;
+    day = 0;
+
 }
 ColonyWindow::~ColonyWindow()
 {
@@ -98,10 +73,43 @@ void ColonyWindow::on_button_DayStart()
 {
   std::cout<<"DayStart button placeholder."<<std::endl;
 }
-
-
-void Colonist::add_coal(int amount)
+void ColonyWindow::end_game()
 {
-  *CoalPtr += amount;
-  //printf("coal added, now there is %d\n", *CoalPtr);
+  if(oxygen < 0) // Loss
+    {
+      Gtk::MessageDialog dialog(*this, "Game Over: Lost Colony\n", false, Gtk::MESSAGE_INFO);
+      dialog.set_secondary_text("Your oxygen was depleted. Remember that burning generators and additional people consume oxygen.");
+      dialog.run();
+      ColonyWindow::close();
+    }
+  if(Colonists.size() == COLONISTS_TO_WIN) // Win
+    {
+      Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
+      dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: %d.",day);
+      dialog.run();
+      ColonyWindow::close();
+    }
+}
+
+//____________________Colonist Class Implementation_______________
+Colonist::Colonist(string name, int* Coal, int* Oxygen) // Tommy
+{
+  CoalPtr = Coal;
+  OxygenPtr = Oxygen;
+  stress = 0;
+}
+Colonist::~Colonist()
+{
+
+}
+Generator* find_gen()
+{
+  
+}
+void Colonist::add_coal() // Tommy
+{
+  Generator* target = find_gen();
+  *CoalPtr -= ADD_COAL_AMOUNT;
+  *(target).coal += ADD_COAL_AMOUNT;
+  stress += STRESS_ON_WORK;
 }

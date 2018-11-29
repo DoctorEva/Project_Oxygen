@@ -6,6 +6,11 @@
 #include <string>
 #include <vector>
 
+#define STRESS_ON_WORK = 20 // The amount of stress gained by working
+#define ADD_COAL_AMOUNT = 1
+#define COLONISTS_TO_WIN = 20
+
+
 class Batteries
 {
   int* Oxygen; // Accessed Variables
@@ -40,7 +45,7 @@ class Colonist
  public:
   Colonist(string name, int* Coal, int* Oxygen);
   ~Colonist();
-  void add_coal(int amount, Generator* target);
+  void add_coal();
   virtual void do_work() = 0;
       
 };
@@ -77,9 +82,7 @@ public:
 
     // Used to read in data from a file, every line is recorded in a vector.
     static std::vector<std::string> read_file(std::string filename);
-    
-    //static std::string openfile(std::string prompt = "Please select a file.");
-    // Uncomment if we want to add a save/load ability.
+
 protected:
     //____________ GUI STUFF ____________________
     void on_button_DayStart();
@@ -93,13 +96,14 @@ protected:
 
     std::vector<std::string> HighScores;
     //______________ OXYGEN STUFF _____________________
-    int coal, oxygen, raw_metal, ref_metal;
+    int coal, oxygen, raw_metal, ref_metal, day;
     std::vector<Colonist*> Colonists;
     std::vector<Generator> Generators;
     Batteries BB;
     
     void end_game(); // Ends the game if # colonists = 20 (win) , or Oxygen < 0 (loss). Prints High Scores.
-
+    void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
+    void remove_colonist(); // Should stress all colonists, and remove the target colonist.
 
  };
 
