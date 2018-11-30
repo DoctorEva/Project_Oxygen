@@ -118,3 +118,37 @@ void Colonist::add_coal() // Tommy
   *(target).coal += ADD_COAL_AMOUNT;
   stress += STRESS_ON_WORK;
 }
+
+//_____________Battery Class Implementation___________
+Batteries::Batteries(int* Oxygen, int* Raw, int* Ref)
+{
+  this->Oxygen = Oxygen;
+  *RawPtr = Raw;
+  *RefPtr = Red;
+  Power = 100;
+  MaxPower = 100;
+}
+
+void Batteries::Refine_metal(int amount)
+{
+  for(int i = 0;, i<amount; i++)
+    {
+      if(Power != 0 && RefPtr* != 0)
+	{
+	  *Refptr ++;
+	  Power -= 5;
+	  *RawPtr -= 5;
+	}
+    }
+}
+
+void Batteries::hydrolysis(int amount)
+{
+  for(int i = 0; i<amount; i++)
+    {
+      if(power != 0)
+	{
+	  *Oxygen++;
+	}
+    }
+}
