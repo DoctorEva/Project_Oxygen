@@ -6,14 +6,19 @@
 #include <string>
 #include <vector>
 
+#define COLONISTS_TO_WIN 20 // Win condition.
+// Colonist action definitions.
 #define STRESS_ON_WORK 20 // The amount of stress gained by working
-#define ADD_COAL_AMOUNT 1
-#define COLONISTS_TO_WIN 20
-
+#define ADD_COAL_AMOUNT 1 // Amount of coal added during add_coal();
+// Generator actions definitions
+#define LOW_EFF_OUTPUT 5 // Power output of a low eff. generator
+#define HIGH_EFF_OUTPUT 10 // Power output of a high eff. generator.
+#define CAPACITY_PER_BATTERY 10 // How much power each battery holds.
+// Battery action definitions.
 
 class Batteries
 {
-  int* Oxygen; // Accessed Variables
+  int* OxygenPtr; // Accessed Variables
   int* RawPtr;
   int* RefPtr;
  public:
@@ -26,12 +31,12 @@ class Batteries
 class Generator
 {
   int* OxygenPtr; // Generators use Oxygen
-  int  efficiency;
+  int  efficiency; // How much power is given on work.
   Batteries* PowerGrid; // Access to batteries in charge_battery;
  public:
-  int coal;
-  Generator(int* Oxygen);
-  void charge_battery();
+  int internal_coal;
+  Generator(int* Oxygen, Batteries* PowerOut, int efficiency);
+  void charge_batteries();
 };
 
 class Colonist

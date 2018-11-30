@@ -63,8 +63,10 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     ref_metal = 0;
     day = 0;
     Batteries BB(&oxygen, &raw_metal, &ref_metal);
-    Generator FirstGenerator(&oxygen);
+    Generator FirstGenerator(&oxygen, &BB, LOW_EFF_OUTPUT);
     Generators.push_back(FirstGenerator);
+    // Create the first colonist
+    // Begin the game running thing.
 }
 ColonyWindow::~ColonyWindow()
 {
@@ -75,7 +77,7 @@ void ColonyWindow::on_button_DayStart()
 {
   std::cout<<"DayStart button placeholder."<<std::endl;
 }
-void ColonyWindow::end_game()
+void ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
 {
   if(oxygen < 0) // Loss
     {
@@ -103,6 +105,41 @@ void ColonyWindow::end_game()
       ColonyWindow::close();
     }
 }
+//____________________Battery Class Implementation________________
+Batteries::Batteries(int* oxygen, int* raw, int* ref)
+{
+  OxygenPtr = oxygen;
+  RawPtr = raw;
+  RefPtr = ref;
+
+  MaxPower = CAPACITY_PER_BATTERY;
+  Power = 0;
+}
+void Batteries::refine_metal(int amount) // Amount is the amount of power to spend.
+{
+
+}
+void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend.
+{
+
+}
+//___________________Generaor Class Implementation________________
+Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency)
+{
+  OxygenPtr = oxygen;
+  this->efficiency = efficiency;
+  PowerGrid = PowerOut;
+
+  internal_coal = 0;
+}
+void Generator::charge_batteries()
+{
+  if(internal_coal>0)
+    {
+      // To do: Consume O2 and internal coal to make power.
+    }
+}
+
 
 //____________________Colonist Class Implementation_______________
 Colonist::Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList) // Tommy
