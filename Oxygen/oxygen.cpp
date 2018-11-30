@@ -62,7 +62,11 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     raw_metal = 0;
     ref_metal = 0;
     day = 0;
-
+    Batteries BB(&oxygen, &raw_metal, &ref_metal);
+    Generator FirstGenerator(&oxygen, &BB, LOW_EFF_OUTPUT);
+    Generators.push_back(FirstGenerator);
+    // Create the first colonist
+    // Begin the game running thing.
 }
 ColonyWindow::~ColonyWindow()
 {
@@ -73,7 +77,7 @@ void ColonyWindow::on_button_DayStart()
 {
   std::cout<<"DayStart button placeholder."<<std::endl;
 }
-void ColonyWindow::end_game()
+void ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
 {
   if(oxygen < 0) // Loss
     {
@@ -82,42 +86,96 @@ void ColonyWindow::end_game()
       dialog.run();
       ColonyWindow::close();
     }
+  else if(Colonists.size() == 0) // Loss
+    {
+      Gtk::MessageDialog dialog(*this, "Game Over: Abandoned Colony\n", false, Gtk::MESSAGE_INFO);
+      dialog.set_secondary_text("Your colonists all left. Remember that stressed colonists become unproductive and need a rest.");
+      dialog.run();
+      ColonyWindow::close();
+    }
   if(Colonists.size() == COLONISTS_TO_WIN) // Win
     {
       Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: %d.",day);
       dialog.run();
-      string new_record = player_name + '_'+std::to_string(day);
-      HighScores.push(new_record);
+      std::string new_record = player_name + "_"+std::to_string(day);
+      HighScores.push_back(new_record);
       //To do - output sorted High Scores to screen..
       //To do - output High Scores to file.
       ColonyWindow::close();
     }
 }
+//____________________Battery Class Implementation________________
+Batteries::Batteries(int* oxygen, int* raw, int* ref)
+{
+  OxygenPtr = oxygen;
+  RawPtr = raw;
+  RefPtr = ref;
+
+  MaxPower = CAPACITY_PER_BATTERY;
+  Power = 0;
+}
+void Batteries::refine_metal(int amount) // Amount is the amount of power to spend.
+{
+
+}
+void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend.
+{
+
+}
+//___________________Generaor Class Implementation________________
+Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency)
+{
+  OxygenPtr = oxygen;
+  this->efficiency = efficiency;
+  PowerGrid = PowerOut;
+
+  internal_coal = 0;
+}
+void Generator::charge_batteries()
+{
+  if(internal_coal>0)
+    {
+      // To do: Consume O2 and internal coal to make power.
+    }
+}
+
 
 //____________________Colonist Class Implementation_______________
-Colonist::Colonist(string name, int* Coal, int* Oxygen) // Tommy
+Colonist::Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList) // Tommy
 {
   CoalPtr = Coal;
   OxygenPtr = Oxygen;
   stress = 0;
-  *this->name = name;
+  this->name = name;
+  GenAccess = GeneratorList;
 }
 Colonist::~Colonist()
 {
 
 }
-Generator* find_gen()
+Generator* Colonist::find_gen() // Returns the most empty generator.
 {
-  
+  int i, min;
+  Generator* ret = (*GenAccess)[0]; // Game starts with 1 generator, so assume there is always one.
+  for (i=1, min = ret->internal_coal;i<(*GenAccess).size();i++)
+    {
+      if((*GenAccess)[i]->internal_coal < min)
+	{
+	  ret = (*GenAccess)[i];
+	  min = ret->internal_coal;
+	}
+    }
+  return ret;
 }
 void Colonist::add_coal() // Tommy
 {
-  Generator* target = find_gen();
+  Generator* targetGenerator = find_gen();
   *CoalPtr -= ADD_COAL_AMOUNT;
-  *(target).coal += ADD_COAL_AMOUNT;
+  targetGenerator->internal_coal += ADD_COAL_AMOUNT;
   stress += STRESS_ON_WORK;
 }
+<<<<<<< HEAD
 
 //_____________Battery Class Implementation___________
 Batteries::Batteries(int* Oxygen, int* Raw, int* Ref)
@@ -151,4 +209,33 @@ void Batteries::hydrolysis(int amount)
 	  *Oxygen++;
 	}
     }
+=======
+//__Engineer
+Engineer::Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref):Colonist(name, Coal, Oxygen, GeneratorList)
+{
+  rawPtr = raw;
+  refPtr = ref;
+}
+void Engineer::do_work()
+{
+
+}
+//__Miner
+Miner::Miner(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw):Colonist(name, Coal, Oxygen, GeneratorList)
+{
+  rawPtr = raw;
+}
+void Miner::do_work()
+{
+
+}
+//__Caretaker
+Caretaker::Caretaker(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(name, Coal, Oxygen, GeneratorList)
+{
+  PatientList = PeopleList;
+}
+void Caretaker::do_work()
+{
+
+>>>>>>> a9f3c8742d74c7fcffd324874e27fc20a93814ff
 }

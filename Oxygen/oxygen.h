@@ -6,14 +6,19 @@
 #include <string>
 #include <vector>
 
-#define STRESS_ON_WORK = 20 // The amount of stress gained by working
-#define ADD_COAL_AMOUNT = 1
-#define COLONISTS_TO_WIN = 20
-
+#define COLONISTS_TO_WIN 20 // Win condition.
+// Colonist action definitions.
+#define STRESS_ON_WORK 20 // The amount of stress gained by working
+#define ADD_COAL_AMOUNT 1 // Amount of coal added during add_coal();
+// Generator actions definitions
+#define LOW_EFF_OUTPUT 5 // Power output of a low eff. generator
+#define HIGH_EFF_OUTPUT 10 // Power output of a high eff. generator.
+#define CAPACITY_PER_BATTERY 10 // How much power each battery holds.
+// Battery action definitions.
 
 class Batteries
 {
-  int* Oxygen; // Accessed Variables
+  int* OxygenPtr; // Accessed Variables
   int* RawPtr;
   int* RefPtr;
  public:
@@ -26,24 +31,25 @@ class Batteries
 class Generator
 {
   int* OxygenPtr; // Generators use Oxygen
-  int  efficiency;
+  int  efficiency; // How much power is given on work.
   Batteries* PowerGrid; // Access to batteries in charge_battery;
  public:
-  int coal;
-  Generator(int* Oxygen);
-  void charge_battery();
+  int internal_coal;
+  Generator(int* Oxygen, Batteries* PowerOut, int efficiency);
+  void charge_batteries();
 };
-// TO DO - add on to the base constructor to also set stuff with * OR just add a set_ptrs() function?
+
 class Colonist
 {
  protected:
   int stress;
-  string name;
+  std::string name;
   int* CoalPtr;  // All colonists can change coal.
   int* OxygenPtr; // All colonists change Oxygen values
-  Generator* find_gen(); // Returns most "needy" generator i.e. an empty one
+  std::vector<Generator*>* GenAccess;
+  Generator* find_gen(); // Returns most "needy" generator i.e. an empty one from Generators.
  public:
-  Colonist(string name, int* Coal, int* Oxygen);
+  Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList);
   ~Colonist();
   void add_coal();
   virtual void do_work() = 0;
@@ -51,29 +57,30 @@ class Colonist
 };
 class Engineer:public Colonist
 {
-  int* rawPtr; // *
-  int* refPtr; // *
+  int* rawPtr;
+  int* refPtr;
  public:
-  Engineer(int* raw, int* ref)
+  Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref);
   void do_work();
 };
 class Miner:public Colonist
 {
-  int* rawPtr; // *
+  int* rawPtr;
  public:
-  Miner(int* raw);
+  Miner(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw);
   void do_work();
 };
 class Caretaker:public Colonist //
 {
   std::vector<Colonist*>* PatientList;
-  Colonist* find_most_stressed(); // Returns the most stressed colonist.
+  Colonist* find_most_stressed(); // Returns the most stressed colonist from PatientList.
+  Colonist* Patient;
  public:
-  Colonist* Patient; // (This will be regularly changed. No need to initialized in a constructor.)
+  Caretaker(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, std::vector<Colonist*>* PeopleList);
   void do_work();
 };
 
-
+//_______________________________________________________________________________
 class ColonyWindow:public Gtk::Window
 {
 public:
@@ -97,10 +104,9 @@ protected:
     std::vector<std::string> HighScores;
     //______________ OXYGEN STUFF _____________________
     int coal, oxygen, raw_metal, ref_metal, day;
-    string player_name;
+    std::string player_name;
     std::vector<Colonist*> Colonists;
     std::vector<Generator> Generators;
-    Batteries BB;
     
     void end_game(); // Ends the game if # colonists = 20 (win) , or Oxygen < 0 (loss). Prints High Scores.
     void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
