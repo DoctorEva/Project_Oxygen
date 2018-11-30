@@ -138,3 +138,31 @@ void Colonist::add_coal() // Tommy
   targetGenerator->coal += ADD_COAL_AMOUNT;
   stress += STRESS_ON_WORK;
 }
+//__Engineer
+Engineer::Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref):Colonist(name, Coal, Oxygen, GeneratorList)
+{
+  rawPtr = raw;
+  refPtr = ref;
+}
+void Engineer::do_work()
+{
+
+}
+//__Miner
+Miner::Miner(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw):Colonist(name, Coal, Oxygen, GeneratorList)
+{
+  rawPtr = raw;
+}
+void Miner::do_work()
+{
+
+}
+//__Caretaker
+Caretaker::Caretaker(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(name, Coal, Oxygen, GeneratorList)
+{
+  PatientList = PeopleList;
+}
+void Caretaker::do_work()
+{
+
+}
