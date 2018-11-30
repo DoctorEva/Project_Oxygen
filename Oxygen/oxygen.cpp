@@ -158,12 +158,12 @@ Generator* Colonist::find_gen() // Returns the most empty generator.
 {
   int i, min;
   Generator* ret = (*GenAccess)[0]; // Game starts with 1 generator, so assume there is always one.
-  for (i=1, min = ret->coal;i<(*GenAccess).size();i++)
+  for (i=1, min = ret->internal_coal;i<(*GenAccess).size();i++)
     {
-      if((*GenAccess)[i]->coal < min)
+      if((*GenAccess)[i]->internal_coal < min)
 	{
 	  ret = (*GenAccess)[i];
-	  min = ret->coal;
+	  min = ret->internal_coal;
 	}
     }
   return ret;
@@ -172,7 +172,7 @@ void Colonist::add_coal() // Tommy
 {
   Generator* targetGenerator = find_gen();
   *CoalPtr -= ADD_COAL_AMOUNT;
-  targetGenerator->coal += ADD_COAL_AMOUNT;
+  targetGenerator->internal_coal += ADD_COAL_AMOUNT;
   stress += STRESS_ON_WORK;
 }
 //__Engineer
