@@ -62,7 +62,9 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     raw_metal = 0;
     ref_metal = 0;
     day = 0;
-
+    Batteries BB(&oxygen, &raw_metal, &ref_metal);
+    Generator FirstGenerator(&oxygen);
+    Generators.push_back(FirstGenerator);
 }
 ColonyWindow::~ColonyWindow()
 {
@@ -82,13 +84,20 @@ void ColonyWindow::end_game()
       dialog.run();
       ColonyWindow::close();
     }
+  else if(Colonists.size() == 0) // Loss
+    {
+      Gtk::MessageDialog dialog(*this, "Game Over: Abandoned Colony\n", false, Gtk::MESSAGE_INFO);
+      dialog.set_secondary_text("Your colonists all left. Remember that stressed colonists become unproductive and need a rest.");
+      dialog.run();
+      ColonyWindow::close();
+    }
   if(Colonists.size() == COLONISTS_TO_WIN) // Win
     {
       Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: %d.",day);
       dialog.run();
-      string new_record = player_name + '_'+std::to_string(day);
-      HighScores.push(new_record);
+      std::string new_record = player_name + "_"+std::to_string(day);
+      HighScores.push_back(new_record);
       //To do - output sorted High Scores to screen..
       //To do - output High Scores to file.
       ColonyWindow::close();
@@ -96,25 +105,36 @@ void ColonyWindow::end_game()
 }
 
 //____________________Colonist Class Implementation_______________
-Colonist::Colonist(string name, int* Coal, int* Oxygen) // Tommy
+Colonist::Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList) // Tommy
 {
   CoalPtr = Coal;
   OxygenPtr = Oxygen;
   stress = 0;
-  *this->name = name;
+  this->name = name;
+  GenAccess = GeneratorList;
 }
 Colonist::~Colonist()
 {
 
 }
-Generator* find_gen()
+Generator* Colonist::find_gen() // Returns the most empty generator.
 {
-  
+  int i, min;
+  Generator* ret = (*GenAccess)[0]; // Game starts with 1 generator, so assume there is always one.
+  for (i=1, min = ret->coal;i<(*GenAccess).size();i++)
+    {
+      if((*GenAccess)[i]->coal < min)
+	{
+	  ret = (*GenAccess)[i];
+	  min = ret->coal;
+	}
+    }
+  return ret;
 }
 void Colonist::add_coal() // Tommy
 {
-  Generator* target = find_gen();
+  Generator* targetGenerator = find_gen();
   *CoalPtr -= ADD_COAL_AMOUNT;
-  *(target).coal += ADD_COAL_AMOUNT;
+  targetGenerator->coal += ADD_COAL_AMOUNT;
   stress += STRESS_ON_WORK;
 }
