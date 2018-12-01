@@ -35,18 +35,23 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     this->resize(400,400);
 
     // Setting label and button texts
-    worker_start.add_label("~Issue Orders");
+    button_score.add_label("~Submit~");
     quit.add_label("~Quit~");
-    label_resources.set_text("Label_resources placed here.");
+    label_scores.set_text("Sorted High Scores print here.");
+    name_in.set_text("Better luck next time!");
 
     // Signal Handling.
-    worker_start.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::on_worker_start));
+    button_score.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::on_button_score));
     quit.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::close));
 
     // Widget Arrangement
-    grid.attach(label_resources,   0,0,2,1);
-    grid.attach(worker_start,      0,2,1,1);
-    grid.attach(quit,              1,2,1,1);
+    grid.attach(label_scores,   0,0,2,5);
+    grid.attach(button_score,      2,6,1,1);
+    grid.attach(quit,              2,7,1,1);
+    grid.attach(name_in,           0,6,2,1);
+
+    button_score.set_sensitive(FALSE); // Enabled in end_game(), if victory is acheived.
+    name_in.set_sensitive(FALSE);
     
     grid.show_all();
     add(grid);
@@ -55,14 +60,15 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     Gtk::MessageDialog dialog(*this, "You are in charge of leading a small space colony!\n", false, Gtk::MESSAGE_INFO);
     dialog.set_secondary_text("To survive, you must produce power and create enough oxygen to breathe and grow, good luck Boss!\n\nRead the README for a tutorial on mechanics!");
     dialog.run();
+    dialog.close();
     //____________________OXYGEN STUFF___________________
-    coal = 0;
+    coal = 2;
     oxygen = 100;
     raw_metal = 0;
     ref_metal = 0;
     day = 1;
     Batteries BB(&oxygen, &raw_metal, &ref_metal);
-    Generator FirstGenerator(&oxygen, &BB, LOW_EFF_OUTPUT);
+    Generator FirstGenerator(&oxygen, &BB, 1);
     Generators.push_back(FirstGenerator);
 
     create_colonist(); // First Colonist.
@@ -70,72 +76,101 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     int i = 1;
     while(i)
       {
-	std::cout<<Colonists.size()<<std::endl;
-	end_game(); // Try to end the game upon day start
+	if(end_game())
+	  i = 0;
+	else
+	  {// Try to end the game upon day start
 
-	//Ask if a new colonist is wanted
-	if(day>1)
-	  {
-	    Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	    prompt_for_colonist.set_secondary_text("It is currently day "+std::to_string(day)+"\nOxygen = "+std::to_string(oxygen)+"\nCoal = "+std::to_string(coal)+"\nRaw Metal= "+std::to_string(raw_metal)+"\nRefined Metal = "+std::to_string(ref_metal));
-					       
-	    if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
+	    //Ask if a new colonist is wanted
+	    if(day>1)
 	      {
-		create_colonist();
-		stress_all_colonists(-5);
+		Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+		prompt_for_colonist.set_secondary_text("It is currently day "+std::to_string(day)+"\nOxygen = "+std::to_string(oxygen)+"\nCoal = "+std::to_string(coal)+"\nRaw Metal= "+std::to_string(raw_metal)+"\nRefined Metal = "+std::to_string(ref_metal)+"\nColonists = "+std::to_string(Colonists.size())+"\nGenerators = "+std::to_string(Generators.size())+"\nCurrentPower / Power capacity = "+std::to_string(BB.Power)+"/"+std::to_string(BB.MaxPower));
+		
+		if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
+		  {
+		    create_colonist();
+		    stress_all_colonists(-5);
+		  }
 	      }
-	  }
-	// Remove stressed colonists
-	for(int i=0;i<Colonists.size();i++)
-	  {
-	    if(Colonists[i]->stress >= 100)
+	    // Remove stressed colonists
+	    for(int j=0;j<Colonists.size();j++)
 	      {
-		Colonists.erase(Colonists.begin()+i);
-		stress_all_colonists(5);
-		i = 0; // Colonists stresses changed, so have to check everyone again.
+		if(Colonists[j]->stress >= 100)
+		  {
+		    std::cout<<"Colonist "<<Colonists[j]->name<<" left due to stress"<<std::endl;
+		    Colonists.erase(Colonists.begin()+j);
+		    stress_all_colonists(5);
+		    j = 0; // Colonists stresses changed, so have to check everyone again.
+		  }
 	      }
+	    // Let the user do a GUI thing to assign job assignments and submit.
+
+	    //
+	    for(int j = 0; j<Colonists.size();j++)
+	      {
+		// Colonists preform assignment.
+		switch(Colonists[j]->assignment)
+		  {
+		  case 0:
+		    Colonists[j]->rest();
+		    break;
+		  case 1:
+		    Colonists[j]->do_work();
+		    break;
+		  case 2:
+		    Colonists[j]->add_coal();  // New colonists do_work by default. Can be changed in the Colonist base class constructor for test purposes.
+		    break;
+		  }
+	      }
+	    for(int j=0; j<Generators.size();j++)
+	      {
+		// Generators burn their coal.
+		Generators[j].charge_batteries();
+	      }
+	    // Let the user do a GUI that prompts the user for the amount of power to spend on a task.
+	    //Batteries spend power
+	    //BB.hydrolysis(BB.Power); // Temporary, we just have all power going to Oxygen.
+	    
+	    oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
+	    day++;
 	  }
-	// Let the user do a GUI thing to assign job assignments. Once they finish that,
-	// they can press the worker start button to have every colonist do thier thing.
-	oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
-        day++;
       }
 }
-ColonyWindow::~ColonyWindow()
+ColonyWindow::~ColonyWindow() // Tommy
 {
 
 }
-void ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
+int ColonyWindow::end_game() // Ends the game if a loss or win condition is met. // Tommy
 {
   if(oxygen < 0) // Loss
     {
       Gtk::MessageDialog dialog(*this, "Game Over: Lost Colony\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your oxygen was depleted. Remember that burning generators and additional people consume oxygen.");
       dialog.run();
-      exit(0);
+      return 1;
     }
   else if(Colonists.size() == 0) // Loss
     {
       Gtk::MessageDialog dialog(*this, "Game Over: Abandoned Colony\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colonists all left. Remember that stressed colonists become unproductive and need a rest.");
       dialog.run();
-      exit(0);
+      return 1;
     }
   if(Colonists.size() == COLONISTS_TO_WIN) // Win
     {
       Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
-      dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: %d.",day);
+      dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: "+std::to_string(day));
       dialog.run();
-      std::string new_record = player_name + "_"+std::to_string(day);
-      HighScores.push_back(new_record);
-      //To do - output sorted High Scores to screen..
-      //To do - output High Scores to file.
-      exit(0);
+      name_in.set_text("Name");
+      button_score.set_sensitive(); // Enabled in end_game(), if victory is acheived.
+      name_in.set_sensitive();
+      return 1;
     }
+  return 0;
 }
-void ColonyWindow::create_colonist()
+void ColonyWindow::create_colonist() // Tommy
 {
-  std::cout<<"Create colonist called"<<std::endl;
   Gtk::Window w;
   Gtk::Dialog *dialog = new Gtk::Dialog();
   dialog->set_transient_for(w);
@@ -185,7 +220,7 @@ void ColonyWindow::create_colonist()
   delete label;
   delete entry;
 }
-void ColonyWindow::stress_all_colonists(int amount)
+void ColonyWindow::stress_all_colonists(int amount) // Tommy
 {
   for(int i = 0; i<Colonists.size();i++)
     {
@@ -196,10 +231,21 @@ void ColonyWindow::stress_all_colonists(int amount)
 	}
     }
 }
-//Button Functionality.
-void ColonyWindow::on_worker_start()
+void ColonyWindow::sort_scores()
 {
 
+}
+//Button Functionality.
+void ColonyWindow::on_button_score() // Should allow the user to submit their name
+{
+  // adds name
+  std::string addition = name_in.get_text();
+  HighScores.push_back(addition);
+  // sorts list again
+  sort_scores();
+  
+  name_in.set_sensitive(FALSE); // Disables these elements so the user doesnt enter their name multiple times.
+  button_score.set_sensitive(FALSE); 
 }
 
 //____________________Battery Class Implementation________________ 
@@ -246,7 +292,7 @@ void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend
     }
 }
 //___________________Generator Class Implementation________________
-Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency)
+Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency) // Tommy
 {
   OxygenPtr = oxygen;
   this->efficiency = efficiency;
@@ -254,11 +300,19 @@ Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency)
 
   internal_coal = 0;
 }
-void Generator::charge_batteries()
+void Generator::charge_batteries() // Tommy
 {
   if(internal_coal>0)
     {
-      // To do: Consume O2 and internal coal to make power.
+      for(int i = 0; i<COAL_PER_BURN && internal_coal != 0; i++)
+	{
+	  internal_coal--;
+	  *OxygenPtr -= OXYGEN_PER_BURN;
+	  PowerGrid->Power += BASE_EFF_OUTPUT * efficiency;
+	  std::cout<<"Coal burnt."<<std::endl;
+	}
+      if(PowerGrid->Power > PowerGrid->MaxPower)
+	PowerGrid->Power = PowerGrid->MaxPower;
     }
 }
 
@@ -270,12 +324,13 @@ Colonist::Colonist(int* Coal, int* Oxygen, std::vector<Generator>* GeneratorList
   OxygenPtr = Oxygen;
   stress = 0;
   GenAccess = GeneratorList;
+  assignment = 2;
 }
-Colonist::~Colonist()
+Colonist::~Colonist() // Tommy
 {
 
 }
-Generator* Colonist::find_gen() // Returns the most empty generator.
+Generator* Colonist::find_gen() // Returns the most empty generator. // Tommy
 {
   int i, min;
   Generator* ret = &(*GenAccess)[0]; // Game starts with 1 generator, so assume there is always one.
@@ -292,13 +347,24 @@ Generator* Colonist::find_gen() // Returns the most empty generator.
 void Colonist::add_coal() // Tommy
 {
   Generator* targetGenerator = find_gen();
-  *CoalPtr -= ADD_COAL_AMOUNT;
-  targetGenerator->internal_coal += ADD_COAL_AMOUNT;
+  int i;
+  for(i = 0; i<ADD_COAL_AMOUNT && *CoalPtr != 0; i++)
+    {
+      std::cout<<*CoalPtr<<std::endl;
+      *CoalPtr -= 1;
+      std::cout<<*CoalPtr<<std::endl;
+      targetGenerator->internal_coal++;
+    }
+  std::cout<<name<<" - Shovled "<<i<<" coal"<<std::endl;
+  
   stress += STRESS_ON_WORK;
 }
-void Colonist::rest()
+void Colonist::rest() // Tommy
 {
+  std::cout<<name<<" - Taking day off"<<std::endl;
   stress -= COLONIST_REST_AMOUNT;
+  if (stress < 0)
+    stress = 0;
 }
 
 //__Engineer
@@ -309,7 +375,7 @@ Engineer::Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList,
 }
 void Engineer::do_work()
 {
-
+  std::cout<<"Engineer "<<name<<"- Working!"<<std::endl;
 }
 //__Miner
 Miner::Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw):Colonist(Coal, Oxygen, GeneratorList)
@@ -318,7 +384,7 @@ Miner::Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* 
 }
 void Miner::do_work()
 {
-
+  std::cout<<"Miner "<<name<<"- Working!"<<std::endl;
 }
 //__Caretaker
 Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(Coal, Oxygen, GeneratorList)
@@ -327,5 +393,5 @@ Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorLis
 }
 void Caretaker::do_work()
 {
-
+  std::cout<<"Caretaker "<<name<<"- Working!"<<std::endl;
 }

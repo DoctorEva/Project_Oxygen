@@ -13,9 +13,10 @@
 #define ADD_COAL_AMOUNT 1 // Amount of coal added during add_coal();
 #define COLONIST_REST_AMOUNT 15 // The amount of stress releived by taking the day off.
 // Generator actions definitions
-#define LOW_EFF_OUTPUT 5 // Power output of a low eff. generator
-#define HIGH_EFF_OUTPUT 10 // Power output of a high eff. generator.
+#define BASE_EFF_OUTPUT 5 // Power output of a low eff. generator burning 1 coal.
 #define CAPACITY_PER_BATTERY 10 // How much power each battery holds.
+#define COAL_PER_BURN 2// How much coal is burnt in burning coal at max.
+#define OXYGEN_PER_BURN 5// How much O2 is burnt per burning coal.
 // Battery action definitions.
 
 class Batteries
@@ -33,7 +34,7 @@ class Batteries
 class Generator
 {
   int* OxygenPtr; // Generators use Oxygen
-  int  efficiency; // How much power is given on work.
+  int  efficiency; // Multiplier of base generator output.
   Batteries* PowerGrid; // Access to batteries in charge_battery;
  public:
   int internal_coal;
@@ -49,6 +50,7 @@ class Colonist
   std::vector<Generator>* GenAccess;
   Generator* find_gen(); // Returns most "needy" generator i.e. an empty one from Generators.
  public:
+  int assignment;
   std::string name;
   int stress;
   Colonist(int* Coal, int* Oxygen, std::vector<Generator>* GeneratorList);
@@ -95,21 +97,23 @@ public:
 
 protected:
     //____________ GUI STUFF ____________________
-    void on_worker_start();
-    Gtk::Button worker_start;
-    Gtk::Label label_resources; // Displays Day, resource counts on Window.
+    void on_button_score();
+    Gtk::Button button_score;
+    Gtk::Label label_scores; // Displays Day, resource counts on Window.
+    Gtk::Entry name_in;
     
     Gtk::Button quit;
     Gtk::Grid grid;
 
     std::vector<std::string> HighScores;
+    void sort_scores();
     //______________ OXYGEN STUFF _____________________
     int coal, oxygen, raw_metal, ref_metal, day;
     std::string player_name;
     std::vector<Colonist*> Colonists;
     std::vector<Generator> Generators;
     
-    void end_game(); // Ends the game if # colonists = 20 (win) , or Oxygen < 0 (loss). Prints High Scores.
+    int end_game(); // Returns true if an end condition is met.
     void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
     void stress_all_colonists(int amount); // Stresses all colonists. Can also destress.
 
