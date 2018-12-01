@@ -18,6 +18,9 @@
 #define COAL_PER_BURN 2// How much coal is burnt in burning coal at max.
 #define OXYGEN_PER_BURN 5// How much O2 is burnt per burning coal.
 // Battery action definitions.
+#define OXYGEN_PER_POWER 2// How much O2 is given per power spent.
+#define POWER_PER_REF 5 // How much power does it take to make 1 refined metal.
+#define RAW_PER_REF 2 // How much raw metal makes 1 refined metal.
 
 class Batteries
 {

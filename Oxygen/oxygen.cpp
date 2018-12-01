@@ -258,37 +258,22 @@ Batteries::Batteries(int* oxygen, int* raw, int* ref)
   MaxPower = CAPACITY_PER_BATTERY;
   Power = 0;
 }
-void Batteries::refine_metal(int amount) // Amount is the amount of power to spend. //Michael
+void Batteries::refine_metal(int amount) // Amount is the amount of power to spend. //Michael // Tommy
 {
-  for(int i = 0; i<amount; i++)
+  int ref_possible = amount / POWER_PER_REF; // So, if Amount = 17 but a ref takes 5 power to make, use up to 15 power. 
+  for(int i = 0; i<ref_possible && Power > POWER_PER_REF && *RawPtr > RAW_PER_REF; i++)
     {
-      if(Power != 0)
-	{
-	  Power--;
-	  *RefPtr++;
-	  *RawPtr -= 2;
-	}
-      else
-	{
-	  std::cout<<"Do not have enough power to refine material."<<std::endl;
-	  break;
-	}
+      Power -= POWER_PER_REF;
+      *RefPtr += 1;
+      *RawPtr -= RAW_PER_REF;
     }
 }
-void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend. //Michael
+void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend. //Michael // Tommy
 {
-  for(int i = 0; i<amount; i++)
+  for(int i = 0; i<amount && Power > 0; i++)
     {
-      if(Power != 0)
-	{
-	  Power--;
-	  *OxygenPtr++;
-	}
-      else
-	{
-	  std::cout<<"Do not have enough power to refine material."<<std::endl;
-	  break;
-	}
+      Power--;
+      *OxygenPtr += OXYGEN_PER_POWER; 
     }
 }
 //___________________Generator Class Implementation________________
@@ -350,9 +335,7 @@ void Colonist::add_coal() // Tommy
   int i;
   for(i = 0; i<ADD_COAL_AMOUNT && *CoalPtr != 0; i++)
     {
-      std::cout<<*CoalPtr<<std::endl;
       *CoalPtr -= 1;
-      std::cout<<*CoalPtr<<std::endl;
       targetGenerator->internal_coal++;
     }
   std::cout<<name<<" - Shovled "<<i<<" coal"<<std::endl;
