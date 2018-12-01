@@ -64,27 +64,28 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     Batteries BB(&oxygen, &raw_metal, &ref_metal);
     Generator FirstGenerator(&oxygen, &BB, LOW_EFF_OUTPUT);
     Generators.push_back(FirstGenerator);
-    
-    Miner Miner(&coal, &oxygen, &Generators, &raw_metal);
-    Engineer Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal);
-    Caretaker Caretaker(&coal, &oxygen, &Generators, &Colonists);
-
 
     create_colonist(); // First Colonist.
     // Begin the game running thing.
-    while(1)
+    int i = 1;
+    while(i)
       {
+	std::cout<<Colonists.size()<<std::endl;
 	end_game(); // Try to end the game upon day start
-	oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
+
 	//Ask if a new colonist is wanted
-	Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
+	if(day>1)
 	  {
-	    if(day>1)
-	      create_colonist();
-	    stress_all_colonists(-5);
+	    Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	    prompt_for_colonist.set_secondary_text("It is currently day "+std::to_string(day)+"\nOxygen = "+std::to_string(oxygen)+"\nCoal = "+std::to_string(coal)+"\nRaw Metal= "+std::to_string(raw_metal)+"\nRefined Metal = "+std::to_string(ref_metal));
+					       
+	    if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
+	      {
+		create_colonist();
+		stress_all_colonists(-5);
+	      }
 	  }
-	// Removed stressed colonists
+	// Remove stressed colonists
 	for(int i=0;i<Colonists.size();i++)
 	  {
 	    if(Colonists[i]->stress >= 100)
@@ -96,6 +97,8 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	  }
 	// Let the user do a GUI thing to assign job assignments. Once they finish that,
 	// they can press the worker start button to have every colonist do thier thing.
+	oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
+        day++;
       }
 }
 ColonyWindow::~ColonyWindow()
@@ -154,8 +157,6 @@ void ColonyWindow::create_colonist()
   int choice = dialog->run();
   int i = 1;
   Colonist* NewGuy;
-  NewGuy->name = entry->get_text();
-  
   switch(choice)
     {
     case 0:
@@ -174,7 +175,11 @@ void ColonyWindow::create_colonist()
       i = 0;
     }
   if(i)
-    Colonists.push_back(NewGuy);
+    {
+      NewGuy->name = entry->get_text();
+      Colonists.push_back(NewGuy);
+      std::cout<<"Colonist added: "<<Colonists[0]->name<<std::endl;
+    }
   dialog->close();
   delete dialog;
   delete label;
