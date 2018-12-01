@@ -117,35 +117,36 @@ Batteries::Batteries(int* oxygen, int* raw, int* ref)
 }
 void Batteries::refine_metal(int amount) // Amount is the amount of power to spend. //Michael
 {
-  if(Power != 0)
+  for(int i = 0; i<amount; i++)
     {
-      for(int i = 0; i<amount; i++)
+      if(Power != 0)
 	{
 	  Power--;
 	  *RefPtr++;
 	  *RawPtr -= 2;
 	}
-    }
-  else
-    {
-      std::cout<<"Sorry no power."<<std::endl;
+      else
+	{
+	  std::cout<<"Do not have enough power to refine material."<<std::endl;
+	  break;
+	}
     }
 }
 void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend. //Michael
 {
-  if(Power != 0)
+  for(int i = 0; i<amount; i++)
     {
-      for(int i = 0; i<amount; i++)
+      if(Power != 0)
 	{
 	  Power--;
 	  *OxygenPtr++;
 	}
+      else
+	{
+	  std::cout<<"Do not have enough power to refine material."<<std::endl;
+	  break;
+	}
     }
-  else
-    {
-      std::cout<<"Sorry no power."<<std::endl;
-    }
-
 }
 //___________________Generator Class Implementation________________
 Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency)
