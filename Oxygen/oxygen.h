@@ -7,6 +7,7 @@
 #include <vector>
 
 #define COLONISTS_TO_WIN 20 // Win condition.
+#define STRESS_THRESHOLD 60 // Past this stress, a colonist will not do work.
 // Colonist action definitions.
 #define COLONISTS_DAILY_OXYGEN 5
 #define STRESS_ON_WORK 20 // The amount of stress gained by working
@@ -119,6 +120,7 @@ protected:
     int end_game(); // Returns true if an end condition is met.
     void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
     void stress_all_colonists(int amount); // Stresses all colonists. Can also destress.
+
 
  };
 

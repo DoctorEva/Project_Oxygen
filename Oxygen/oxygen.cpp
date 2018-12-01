@@ -45,10 +45,10 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     quit.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::close));
 
     // Widget Arrangement
-    grid.attach(label_scores,   0,0,2,5);
-    grid.attach(button_score,      2,6,1,1);
-    grid.attach(quit,              2,7,1,1);
-    grid.attach(name_in,           0,6,2,1);
+    grid.attach(label_scores,   0,1,3,5);
+    grid.attach(button_score,      2,8,1,1);
+    grid.attach(quit,              2,9,1,1);
+    grid.attach(name_in,           0,8,2,1);
 
     button_score.set_sensitive(FALSE); // Enabled in end_game(), if victory is acheived.
     name_in.set_sensitive(FALSE);
@@ -130,12 +130,13 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	      }
 	    // Let the user do a GUI that prompts the user for the amount of power to spend on a task.
 	    //Batteries spend power
-	    //BB.hydrolysis(BB.Power); // Temporary, we just have all power going to Oxygen.
+	    BB.hydrolysis(5); // Temporary, we just have 5 power going to Oxygen.
 	    
 	    oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
 	    day++;
 	  }
       }
+    sort_scores();
 }
 ColonyWindow::~ColonyWindow() // Tommy
 {
@@ -213,7 +214,7 @@ void ColonyWindow::create_colonist() // Tommy
     {
       NewGuy->name = entry->get_text();
       Colonists.push_back(NewGuy);
-      std::cout<<"Colonist added: "<<Colonists[0]->name<<std::endl;
+      std::cout<<"Colonist added: "<<Colonists[Colonists.size()-1]->name<<std::endl;
     }
   dialog->close();
   delete dialog;
@@ -231,9 +232,20 @@ void ColonyWindow::stress_all_colonists(int amount) // Tommy
 	}
     }
 }
-void ColonyWindow::sort_scores()
+void ColonyWindow::sort_scores() // Sorts scores and updates label.
 {
-
+  std::vector<std::string> temp;
+  for(int i = 0; i<HighScores.size();i += 2)
+    {
+      temp.push_back("Days : "+HighScores[i+1]+" ---------- "+HighScores[i]);
+    }
+  std::sort(temp.begin(), temp.end());
+  std::string scorestext = "~~~~HIGH SCORES~~~~";
+  for(int i=0;i<temp.size()&& i<20;i++) // Prints all records up to a max of 20.
+    {
+      scorestext = scorestext+ "\n" +temp[i];
+    }
+  label_scores.set_text(scorestext);
 }
 //Button Functionality.
 void ColonyWindow::on_button_score() // Should allow the user to submit their name
@@ -331,15 +343,21 @@ Generator* Colonist::find_gen() // Returns the most empty generator. // Tommy
 }
 void Colonist::add_coal() // Tommy
 {
-  Generator* targetGenerator = find_gen();
-  int i;
-  for(i = 0; i<ADD_COAL_AMOUNT && *CoalPtr != 0; i++)
+  if(stress < STRESS_THRESHOLD)
     {
-      *CoalPtr -= 1;
-      targetGenerator->internal_coal++;
+      Generator* targetGenerator = find_gen();
+      int i;
+      for(i = 0; i<ADD_COAL_AMOUNT && *CoalPtr != 0; i++)
+	{
+	  *CoalPtr -= 1;
+	  targetGenerator->internal_coal++;
+	}
+      std::cout<<name<<" - Shovled "<<i<<" coal"<<std::endl;
     }
-  std::cout<<name<<" - Shovled "<<i<<" coal"<<std::endl;
-  
+  else
+    {
+      std::cout<<name<<" was too stressed to work."<<std::endl;
+    }
   stress += STRESS_ON_WORK;
 }
 void Colonist::rest() // Tommy

@@ -30,7 +30,7 @@ TUTORIAL:
 	Colonists will gain stress whenever they work. At moderate stress, they won't be get anything done at work but will gain stress trying.
 	At extreme stress, your colonist will give up, and leave the colony.
 	Manage your stress with Caretakers, who will automatically reduce the stress of the most stressed colonist. They'll need destressing too, and can't care for themselves!
-	
+	Colonists will be said and gain a bit of stress when someone leaves. They will also reduce stress when welcoming a new friend!
 	
 _____________________________________
 
