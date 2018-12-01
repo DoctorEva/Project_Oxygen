@@ -8,8 +8,10 @@
 
 #define COLONISTS_TO_WIN 20 // Win condition.
 // Colonist action definitions.
+#define COLONISTS_DAILY_OXYGEN 5
 #define STRESS_ON_WORK 20 // The amount of stress gained by working
 #define ADD_COAL_AMOUNT 1 // Amount of coal added during add_coal();
+#define COLONIST_REST_AMOUNT 15 // The amount of stress releived by taking the day off.
 // Generator actions definitions
 #define LOW_EFF_OUTPUT 5 // Power output of a low eff. generator
 #define HIGH_EFF_OUTPUT 10 // Power output of a high eff. generator.
@@ -42,17 +44,18 @@ class Generator
 class Colonist
 {
  protected:
-  int stress;
   std::string name;
   int* CoalPtr;  // All colonists can change coal.
   int* OxygenPtr; // All colonists change Oxygen values
   std::vector<Generator*>* GenAccess;
   Generator* find_gen(); // Returns most "needy" generator i.e. an empty one from Generators.
  public:
+    int stress;
   Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList);
   ~Colonist();
   void add_coal();
   virtual void do_work() = 0;
+  void rest();
       
 };
 class Engineer:public Colonist
@@ -92,11 +95,9 @@ public:
 
 protected:
     //____________ GUI STUFF ____________________
-    void on_button_DayStart();
-
+    void on_worker_start();
+    Gtk::Button worker_start;
     Gtk::Label label_resources; // Displays Day, resource counts on Window.
-    
-    Gtk::Button button_DayStart;
     
     Gtk::Button quit;
     Gtk::Grid grid;
@@ -110,7 +111,7 @@ protected:
     
     void end_game(); // Ends the game if # colonists = 20 (win) , or Oxygen < 0 (loss). Prints High Scores.
     void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
-    void remove_colonist(); // Should stress all colonists, and remove the target colonist.
+    void stress_all_colonists(int amount); // Stresses all colonists. Can also destress.
 
  };
 

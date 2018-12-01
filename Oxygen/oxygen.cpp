@@ -30,23 +30,22 @@ std::vector<std::string> ColonyWindow::read_file(std::string filename)
 ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 { 
   HighScores = HighScoreValues;
-    this->set_title("~~~Oxygen~~~");
+    this->set_title("~~~Project Oxygen~~~");
     this->set_border_width(10);
     this->resize(400,400);
 
     // Setting label and button texts
-    button_DayStart.add_label("~Start the Day~");
-
+    worker_start.add_label("~Issue Orders");
     quit.add_label("~Quit~");
     label_resources.set_text("Label_resources placed here.");
 
     // Signal Handling.
-    button_DayStart.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::on_button_DayStart));
+    worker_start.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::on_worker_start));
     quit.signal_clicked().connect(sigc::mem_fun(*this,&ColonyWindow::close));
 
     // Widget Arrangement
     grid.attach(label_resources,   0,0,2,1);
-    grid.attach(button_DayStart,   0,1,2,1);
+    grid.attach(worker_start,      0,2,1,1);
     grid.attach(quit,              1,2,1,1);
     
     grid.show_all();
@@ -61,21 +60,40 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     oxygen = 100;
     raw_metal = 0;
     ref_metal = 0;
-    day = 0;
+    day = 1;
     Batteries BB(&oxygen, &raw_metal, &ref_metal);
     Generator FirstGenerator(&oxygen, &BB, LOW_EFF_OUTPUT);
     Generators.push_back(FirstGenerator);
-    // Create the first colonist
+    
     // Begin the game running thing.
+    while(1)
+      {
+	end_game(); // Try to end the game upon day start
+	oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
+	//Ask if a new colonist is wanted
+	Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
+	  {
+	    create_colonist();
+	    stress_all_colonists(-5);
+	  }
+	// Removed stressed colonists
+	for(int i=0;i<Colonists.size();i++)
+	  {
+	    if(Colonists[i]->stress >= 100)
+	      {
+		Colonists.erase(Colonists.begin()+i);
+		stress_all_colonists(10);
+		i = 0; // Colonists stresses changed, so have to check everyone again.
+	      }
+	  }
+	// Let the user do a GUI thing to assign job assignments. Once they finish that,
+	// they can press the worker start button to have every colonist do thier thing.
+      }
 }
 ColonyWindow::~ColonyWindow()
 {
-    
-}
-//Button Functionality.
-void ColonyWindow::on_button_DayStart()
-{
-  std::cout<<"DayStart button placeholder."<<std::endl;
+
 }
 void ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
 {
@@ -84,14 +102,14 @@ void ColonyWindow::end_game() // Ends the game if a loss or win condition is met
       Gtk::MessageDialog dialog(*this, "Game Over: Lost Colony\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your oxygen was depleted. Remember that burning generators and additional people consume oxygen.");
       dialog.run();
-      ColonyWindow::close();
+      exit(0);
     }
   else if(Colonists.size() == 0) // Loss
     {
       Gtk::MessageDialog dialog(*this, "Game Over: Abandoned Colony\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colonists all left. Remember that stressed colonists become unproductive and need a rest.");
       dialog.run();
-      ColonyWindow::close();
+      exit(0);
     }
   if(Colonists.size() == COLONISTS_TO_WIN) // Win
     {
@@ -102,9 +120,30 @@ void ColonyWindow::end_game() // Ends the game if a loss or win condition is met
       HighScores.push_back(new_record);
       //To do - output sorted High Scores to screen..
       //To do - output High Scores to file.
-      ColonyWindow::close();
+      exit(0);
     }
 }
+void ColonyWindow::create_colonist()
+{
+  std::cout<<"Create colonist called"<<std::endl;
+}
+void ColonyWindow::stress_all_colonists(int amount)
+{
+  for(int i = 0; i<Colonists.size();i++)
+    {
+      Colonists[i]->stress -= 5;
+      if(Colonists[i]->stress < 0)
+	{
+	  Colonists[i]->stress = 0; // Colonist stress cannot be negative.
+	}
+    }
+}
+//Button Functionality.
+void ColonyWindow::on_worker_start()
+{
+
+}
+
 //____________________Battery Class Implementation________________ 
 Batteries::Batteries(int* oxygen, int* raw, int* ref)
 {
@@ -200,9 +239,11 @@ void Colonist::add_coal() // Tommy
   targetGenerator->internal_coal += ADD_COAL_AMOUNT;
   stress += STRESS_ON_WORK;
 }
-<<<<<<< HEAD
+void Colonist::rest()
+{
+  stress -= COLONIST_REST_AMOUNT;
+}
 
-=======
 //__Engineer
 Engineer::Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref):Colonist(name, Coal, Oxygen, GeneratorList)
 {
@@ -230,5 +271,4 @@ Caretaker::Caretaker(std::string name, int* Coal, int* Oxygen,std::vector<Genera
 void Caretaker::do_work()
 {
 
->>>>>>> a9f3c8742d74c7fcffd324874e27fc20a93814ff
 }
