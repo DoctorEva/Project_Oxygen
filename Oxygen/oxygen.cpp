@@ -105,7 +105,7 @@ void ColonyWindow::end_game() // Ends the game if a loss or win condition is met
       ColonyWindow::close();
     }
 }
-//____________________Battery Class Implementation________________
+//____________________Battery Class Implementation________________ 
 Batteries::Batteries(int* oxygen, int* raw, int* ref)
 {
   OxygenPtr = oxygen;
@@ -115,15 +115,39 @@ Batteries::Batteries(int* oxygen, int* raw, int* ref)
   MaxPower = CAPACITY_PER_BATTERY;
   Power = 0;
 }
-void Batteries::refine_metal(int amount) // Amount is the amount of power to spend.
+void Batteries::refine_metal(int amount) // Amount is the amount of power to spend. //Michael
 {
+  if(Power != 0)
+    {
+      for(int i = 0; i<amount; i++)
+	{
+	  Power--;
+	  *RefPtr++;
+	  *RawPtr -= 2;
+	}
+    }
+  else
+    {
+      std::cout<<"Sorry no power."<<std::endl;
+    }
+}
+void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend. //Michael
+{
+  if(Power != 0)
+    {
+      for(int i = 0; i<amount; i++)
+	{
+	  Power--;
+	  *OxygenPtr++;
+	}
+    }
+  else
+    {
+      std::cout<<"Sorry no power."<<std::endl;
+    }
 
 }
-void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend.
-{
-
-}
-//___________________Generaor Class Implementation________________
+//___________________Generator Class Implementation________________
 Generator::Generator(int* oxygen, Batteries* PowerOut, int efficiency)
 {
   OxygenPtr = oxygen;
@@ -177,38 +201,6 @@ void Colonist::add_coal() // Tommy
 }
 <<<<<<< HEAD
 
-//_____________Battery Class Implementation___________
-Batteries::Batteries(int* Oxygen, int* Raw, int* Ref)
-{
-  this->Oxygen = Oxygen;
-  *RawPtr = Raw;
-  *RefPtr = Red;
-  Power = 100;
-  MaxPower = 100;
-}
-
-void Batteries::Refine_metal(int amount)
-{
-  for(int i = 0;, i<amount; i++)
-    {
-      if(Power != 0 && RefPtr* != 0)
-	{
-	  *Refptr ++;
-	  Power -= 5;
-	  *RawPtr -= 5;
-	}
-    }
-}
-
-void Batteries::hydrolysis(int amount)
-{
-  for(int i = 0; i<amount; i++)
-    {
-      if(power != 0)
-	{
-	  *Oxygen++;
-	}
-    }
 =======
 //__Engineer
 Engineer::Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref):Colonist(name, Coal, Oxygen, GeneratorList)
