@@ -65,6 +65,12 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     Generator FirstGenerator(&oxygen, &BB, LOW_EFF_OUTPUT);
     Generators.push_back(FirstGenerator);
     
+    Miner Miner(&coal, &oxygen, &Generators, &raw_metal);
+    Engineer Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal);
+    Caretaker Caretaker(&coal, &oxygen, &Generators, &Colonists);
+
+
+    create_colonist(); // First Colonist.
     // Begin the game running thing.
     while(1)
       {
@@ -74,7 +80,8 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
 	if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
 	  {
-	    create_colonist();
+	    if(day>1)
+	      create_colonist();
 	    stress_all_colonists(-5);
 	  }
 	// Removed stressed colonists
@@ -83,7 +90,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	    if(Colonists[i]->stress >= 100)
 	      {
 		Colonists.erase(Colonists.begin()+i);
-		stress_all_colonists(10);
+		stress_all_colonists(5);
 		i = 0; // Colonists stresses changed, so have to check everyone again.
 	      }
 	  }
@@ -126,6 +133,52 @@ void ColonyWindow::end_game() // Ends the game if a loss or win condition is met
 void ColonyWindow::create_colonist()
 {
   std::cout<<"Create colonist called"<<std::endl;
+  Gtk::Window w;
+  Gtk::Dialog *dialog = new Gtk::Dialog();
+  dialog->set_transient_for(w);
+  dialog->set_title("Calling a Colonist");
+  dialog->resize(300,100);
+
+  Gtk::Label *label=new Gtk::Label("Enter Colonist name:");
+  dialog->get_content_area()->pack_start(*label);
+  label->show();
+
+  Gtk::Entry *entry = new Gtk::Entry();
+  entry->set_text("Lil'Fadihy");
+  entry->show();
+  dialog->get_vbox()->pack_start(*entry);
+
+  dialog->add_button("Miner", 0);
+  dialog->add_button("Engineer",1);
+  dialog->add_button("Caretaker",2);
+  int choice = dialog->run();
+  int i = 1;
+  Colonist* NewGuy;
+  NewGuy->name = entry->get_text();
+  
+  switch(choice)
+    {
+    case 0:
+      // Miner
+      NewGuy = new Miner(&coal, &oxygen, &Generators, &raw_metal);
+      break;
+    case 1:
+      // Engineer
+      NewGuy = new Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal);
+      break;
+    case 2:
+      // Caretaker
+      NewGuy = new Caretaker(&coal, &oxygen, &Generators, &Colonists);
+      break;
+    default: // Unexpected selection
+      i = 0;
+    }
+  if(i)
+    Colonists.push_back(NewGuy);
+  dialog->close();
+  delete dialog;
+  delete label;
+  delete entry;
 }
 void ColonyWindow::stress_all_colonists(int amount)
 {
@@ -206,12 +259,11 @@ void Generator::charge_batteries()
 
 
 //____________________Colonist Class Implementation_______________
-Colonist::Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList) // Tommy
+Colonist::Colonist(int* Coal, int* Oxygen, std::vector<Generator>* GeneratorList) // Tommy
 {
   CoalPtr = Coal;
   OxygenPtr = Oxygen;
   stress = 0;
-  this->name = name;
   GenAccess = GeneratorList;
 }
 Colonist::~Colonist()
@@ -221,12 +273,12 @@ Colonist::~Colonist()
 Generator* Colonist::find_gen() // Returns the most empty generator.
 {
   int i, min;
-  Generator* ret = (*GenAccess)[0]; // Game starts with 1 generator, so assume there is always one.
+  Generator* ret = &(*GenAccess)[0]; // Game starts with 1 generator, so assume there is always one.
   for (i=1, min = ret->internal_coal;i<(*GenAccess).size();i++)
     {
-      if((*GenAccess)[i]->internal_coal < min)
+      if((*GenAccess)[i].internal_coal < min)
 	{
-	  ret = (*GenAccess)[i];
+	  ret = &(*GenAccess)[i];
 	  min = ret->internal_coal;
 	}
     }
@@ -245,7 +297,7 @@ void Colonist::rest()
 }
 
 //__Engineer
-Engineer::Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref):Colonist(name, Coal, Oxygen, GeneratorList)
+Engineer::Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw, int* ref):Colonist(Coal, Oxygen, GeneratorList)
 {
   rawPtr = raw;
   refPtr = ref;
@@ -255,7 +307,7 @@ void Engineer::do_work()
 
 }
 //__Miner
-Miner::Miner(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw):Colonist(name, Coal, Oxygen, GeneratorList)
+Miner::Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw):Colonist(Coal, Oxygen, GeneratorList)
 {
   rawPtr = raw;
 }
@@ -264,7 +316,7 @@ void Miner::do_work()
 
 }
 //__Caretaker
-Caretaker::Caretaker(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(name, Coal, Oxygen, GeneratorList)
+Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(Coal, Oxygen, GeneratorList)
 {
   PatientList = PeopleList;
 }

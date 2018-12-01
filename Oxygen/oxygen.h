@@ -44,33 +44,33 @@ class Generator
 class Colonist
 {
  protected:
-  std::string name;
   int* CoalPtr;  // All colonists can change coal.
   int* OxygenPtr; // All colonists change Oxygen values
-  std::vector<Generator*>* GenAccess;
+  std::vector<Generator>* GenAccess;
   Generator* find_gen(); // Returns most "needy" generator i.e. an empty one from Generators.
  public:
-    int stress;
-  Colonist(std::string name, int* Coal, int* Oxygen, std::vector<Generator*>* GeneratorList);
+  std::string name;
+  int stress;
+  Colonist(int* Coal, int* Oxygen, std::vector<Generator>* GeneratorList);
   ~Colonist();
   void add_coal();
   virtual void do_work() = 0;
   void rest();
-      
+  
 };
 class Engineer:public Colonist
 {
   int* rawPtr;
   int* refPtr;
  public:
-  Engineer(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw, int* ref);
+  Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw, int* ref);
   void do_work();
 };
 class Miner:public Colonist
 {
   int* rawPtr;
  public:
-  Miner(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, int* raw);
+  Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw);
   void do_work();
 };
 class Caretaker:public Colonist //
@@ -79,7 +79,7 @@ class Caretaker:public Colonist //
   Colonist* find_most_stressed(); // Returns the most stressed colonist from PatientList.
   Colonist* Patient;
  public:
-  Caretaker(std::string name, int* Coal, int* Oxygen,std::vector<Generator*>* GeneratorList, std::vector<Colonist*>* PeopleList);
+  Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, std::vector<Colonist*>* PeopleList);
   void do_work();
 };
 
