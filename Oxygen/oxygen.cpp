@@ -334,6 +334,8 @@ void ColonyWindow::on_change_assignment(Gtk::Button* button, int i)
       break;
     }
   button->set_label(Colonists[i]->name +": Assigned to "+job+". Stress is at "+std::to_string(Colonists[i]->stress));
+  dialog->close();
+  delete(dialog);
 }
 
 //____________________Battery Class Implementation________________
