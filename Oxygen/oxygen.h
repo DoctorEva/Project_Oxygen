@@ -102,6 +102,7 @@ public:
 protected:
     //____________ GUI STUFF ____________________
     void on_button_score();
+    virtual void on_change_assignment(Gtk::Button* button, int i);
     Gtk::Button button_score;
     Gtk::Label label_scores; // Displays Day, resource counts on Window.
     Gtk::Entry name_in;
@@ -120,6 +121,7 @@ protected:
     int end_game(); // Returns true if an end condition is met.
     void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
     void stress_all_colonists(int amount); // Stresses all colonists. Can also destress.
+    void start_change_assignment_dialog();
 
 
  };

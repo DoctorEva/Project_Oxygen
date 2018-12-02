@@ -105,7 +105,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 		  }
 	      }
 	    // Let the user do a GUI thing to assign job assignments and submit.
-
+	    start_change_assignment_dialog();
 	    //
 	    for(int j = 0; j<Colonists.size();j++)
 	      {
@@ -259,6 +259,82 @@ void ColonyWindow::on_button_score() // Should allow the user to submit their na
   name_in.set_sensitive(FALSE); // Disables these elements so the user doesnt enter their name multiple times.
   button_score.set_sensitive(FALSE);
 }
+void ColonyWindow::start_change_assignment_dialog()
+{
+  Gtk::Window w;
+  Gtk::Dialog *dialog = new Gtk::Dialog();
+  dialog->resize(500,100);
+  dialog->set_transient_for(w);
+  dialog->set_title("~~Give Assignments~~");
+
+  Gtk::Label *label= new Gtk::Label("Select a colonist to change their job.");
+  dialog->get_content_area()->pack_start(*label);
+  label->set_padding(20,20);
+  label->show();
+			 
+  for(int i=0; i<Colonists.size(); i++)
+    {
+      Gtk::Button *colonist = new Gtk::Button();
+      std::string job;
+      switch(Colonists[i]->assignment)
+	{
+	case 0:
+	  job = "take the day off";
+	  break;
+	case 1:
+	  job = "go to work";
+	  break;
+	case 2:
+	  job = "deliver coal";
+	  break;
+	}
+      colonist->add_label(Colonists[i]->name +": Assigned to "+job+". Stress is at "+std::to_string(Colonists[i]->stress));
+      colonist->signal_clicked().connect(sigc::bind<Gtk::Button*, int>(sigc::mem_fun(*this,&ColonyWindow::on_change_assignment), colonist, i));
+      dialog->get_content_area()->pack_start(*colonist);
+      
+      colonist->show();
+    }
+
+  dialog->add_button("Continue", 0);
+  dialog->run();
+  dialog->close();
+  delete(dialog);
+}
+void ColonyWindow::on_change_assignment(Gtk::Button* button, int i)
+{
+  Gtk::Window w;
+  Gtk::Dialog *dialog = new Gtk::Dialog();
+  dialog->resize(200,200);
+  dialog->set_transient_for(w);
+  dialog->set_title("~~What do you need?~~");
+
+  Gtk::Label *label= new Gtk::Label("Select an assignment to assign.");
+  dialog->get_content_area()->pack_start(*label);
+  label->set_padding(20,20);
+  label->show();
+  dialog->add_button("Rest", 0);
+  dialog->add_button("Work", 1);
+  dialog->add_button("Deliver Coal", 2);
+  int temp = dialog->run();
+  if(temp == 0 ||temp == 1 || temp == 2)
+    {
+      Colonists[i]->assignment = temp;
+    }
+  std::string job;
+  switch(Colonists[i]->assignment)
+    {
+    case 0:
+      job = "take the day off";
+      break;
+    case 1:
+      job = "go to work";
+      break;
+    case 2:
+      job = "deliver coal";
+      break;
+    }
+  button->set_label(Colonists[i]->name +": Assigned to "+job+". Stress is at "+std::to_string(Colonists[i]->stress));
+}
 
 //____________________Battery Class Implementation________________
 Batteries::Batteries(int* oxygen, int* raw, int* ref)
@@ -394,12 +470,15 @@ Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorLis
 }
 Colonist* Caretaker::find_most_stressed()//Andrea 
 {
-  Patient=&(*PatientList)[0];
+  Patient=(*PatientList)[0];
   int highest_stress;
   for(int i=1,highest_stress=Patient->stress;i<PatientList->size();i++)
   {
-    highest_stress=(*PatientList)[0].stress;
-    Patient=&(*PatientList)[i];
+    if((*PatientList)[i]->stress > highest_stress)
+      {
+	highest_stress=(*PatientList)[i]->stress;
+	Patient=(*PatientList)[i];
+      }
   }
   return Patient;
 }
