@@ -171,7 +171,7 @@ int ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
       dialog.run();
       return 1;
     }
-  if(Colonists.size() != COLONISTS_TO_WIN) // Win
+  if(Colonists.size() == COLONISTS_TO_WIN) // Win
     {
       Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: "+std::to_string(day));
@@ -215,7 +215,7 @@ void ColonyWindow::create_colonist() // Tommy
       break;
     case 1:
       // Engineer
-      NewGuy = new Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal);
+      NewGuy = new Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal, &BB);
       NewGuy->name = "Engineer ";
       break;
     case 2:
@@ -516,14 +516,28 @@ void Colonist::rest() // Tommy
 }
 
 //__Engineer
-Engineer::Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw, int* ref):Colonist(Coal, Oxygen, GeneratorList)
+Engineer::Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw, int* ref, Batteries* battery):Colonist(Coal, Oxygen, GeneratorList)
 {
   rawPtr = raw;
   refPtr = ref;
+  this->battery = battery;
 }
-void Engineer::do_work()
+void Engineer::do_work() 
 {
-  std::cout<<"Engineer "<<name<<"- Working!"<<std::endl;
+  if(stress < STRESS_THRESHOLD)
+    {
+      // Display a GUI that allows you to pick one of Engineer's build functions, or reassign job.
+    }
+  stress += STRESS_ON_WORK;
+}
+void build_generator(int efficiency)
+{
+  Generator NewGen(OxygenPtr, battery, efficiency);
+  *GeneratorList -> push_back(NewGen);
+}
+void build_battery()
+{
+  *battery->MaxPower += CAPACITY_PER_BATTERY;
 }
 //__Miner
 Miner::Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw):Colonist(Coal, Oxygen, GeneratorList)

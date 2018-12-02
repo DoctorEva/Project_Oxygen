@@ -27,6 +27,10 @@
 // Miner
 #define MINER_RAW 1 // How much raw is found per mining job.
 #define MINER_COAL 2 // How much coal is found per mining job.
+// Engineer
+#define HIGH_GENERATOR_COST 5 // How much refined it takes to build a high gen.
+#define LOW_GENERATOR_COST 5 // How much raw it takes to build a low gen.
+#define BATTERY_COST 3 // How much raw it takes to build a battery.
 
 class Batteries
 {
@@ -73,8 +77,11 @@ class Engineer:public Colonist
 {
   int* rawPtr;
   int* refPtr;
+  Batteries* battery;
+  void build_generator(int efficiency);
+  void build_battery();
  public:
-  Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw, int* ref);
+  Engineer(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw, int* ref, Batteries* battery);
   void do_work();
 };
 class Miner:public Colonist
