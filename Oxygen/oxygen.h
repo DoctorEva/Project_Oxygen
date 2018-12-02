@@ -7,7 +7,7 @@
 #include <vector>
 
 #define COLONISTS_TO_WIN 20 // Win condition.
-#define STRESS_THRESHOLD 60 // Past this stress, a colonist will not do work.
+#define STRESS_THRESHOLD 70 // Past this stress, a colonist will not do work.
 // Colonist action definitions.
 #define COLONISTS_DAILY_OXYGEN 5
 #define STRESS_ON_WORK 20 // The amount of stress gained by working
@@ -22,6 +22,8 @@
 #define OXYGEN_PER_POWER 2// How much O2 is given per power spent.
 #define POWER_PER_REF 5 // How much power does it take to make 1 refined metal.
 #define RAW_PER_REF 2 // How much raw metal makes 1 refined metal.
+// Caretaker
+#define CARETAKER_EFFECT 80 // How much stress caretakers reduce.
 
 class Batteries
 {

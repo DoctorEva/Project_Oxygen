@@ -30,9 +30,9 @@ std::vector<std::string> ColonyWindow::read_file(std::string filename)
 ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 {
   HighScores = HighScoreValues;
-    this->set_title("~~~Project Oxygen~~~");
+    this->set_title("~Project Oxygen~");
     this->set_border_width(10);
-    this->resize(400,400);
+    this->resize(300,400);
 
     // Setting label and button texts
     button_score.add_label("~Submit~");
@@ -138,6 +138,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	  }
       }
     sort_scores();
+    // To do : Output HighScores array to a file
 }
 ColonyWindow::~ColonyWindow() // Tommy
 {
@@ -199,21 +200,24 @@ void ColonyWindow::create_colonist() // Tommy
     case 0:
       // Miner
       NewGuy = new Miner(&coal, &oxygen, &Generators, &raw_metal);
+      NewGuy->name = "Miner ";
       break;
     case 1:
       // Engineer
       NewGuy = new Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal);
+      NewGuy->name = "Engineer ";
       break;
     case 2:
       // Caretaker
       NewGuy = new Caretaker(&coal, &oxygen, &Generators, &Colonists);
+      NewGuy->name = "Caretaker ";
       break;
     default: // Unexpected selection
       i = 0;
     }
   if(i)
     {
-      NewGuy->name = entry->get_text();
+      NewGuy->name += entry->get_text();
       Colonists.push_back(NewGuy);
       std::cout<<"Colonist added: "<<Colonists[Colonists.size()-1]->name<<std::endl;
     }
@@ -515,21 +519,42 @@ Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorLis
 {
   PatientList = PeopleList;
 }
-Colonist* Caretaker::find_most_stressed()//Andrea 
+Colonist* Caretaker::find_most_stressed()//Andrea // Tommy
 {
-  Patient=(*PatientList)[0];
+  Patient= this;
   int highest_stress;
-  for(int i=1,highest_stress=Patient->stress;i<PatientList->size();i++)
+  for(int i=0,highest_stress= 0;i<PatientList->size();i++)
   {
-    if((*PatientList)[i]->stress > highest_stress)
+    if((*PatientList)[i]->stress > highest_stress && this != (*PatientList)[i])
       {
 	highest_stress=(*PatientList)[i]->stress;
 	Patient=(*PatientList)[i];
       }
   }
+  if(Patient == this)
+    {
+      return NULL;
+    }
   return Patient;
 }
-void Caretaker::do_work()
+void Caretaker::do_work() // Tommy
 {
-  std::cout<<"Caretaker "<<name<<"- Working!"<<std::endl;
+  if(stress < STRESS_THRESHOLD)
+    {
+      Colonist* target = find_most_stressed();
+      if(target != NULL)
+	{
+	  std::cout<<"Caretaker "<<name<<"-targets- "<<target->name<<std::endl;
+	  target->stress -= CARETAKER_EFFECT;
+	  if(target->stress < 0)
+	    {
+	      target->stress = 0;
+	    }
+	}
+      else
+	{
+	  std::cout<<"Caretaker "<<name<<" has no one to target."<<std::endl;
+	}
+    }
+  stress += STRESS_ON_WORK;
 }
