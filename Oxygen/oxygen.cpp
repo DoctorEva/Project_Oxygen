@@ -26,7 +26,10 @@ std::vector<std::string> ColonyWindow::read_file(std::string filename)
   input.close();
   return all;
 }
+void ColonyWindow::output_file(std::vector<std::string data)
+{
 
+}
 ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 {
   HighScores = HighScoreValues;
@@ -138,7 +141,6 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	  }
       }
     sort_scores();
-    // To do : Output HighScores array to a file
 }
 ColonyWindow::~ColonyWindow() // Tommy
 {
@@ -257,9 +259,17 @@ void ColonyWindow::on_button_score() // Should allow the user to submit their na
 {
   // adds name
   std::string addition = name_in.get_text();
+  for(int i=0;i<addition.size();i++)
+    {
+      if(addition[i] == ' ')
+	addition[i] = '_';
+    }
+  std::cout<<"Record name - "<<addition<<std::endl;
   HighScores.push_back(addition);
+  HighScores.push_back(std::to_string(day));
   // sorts list again
   sort_scores();
+  // To do: Outputs HighScores to file.
 
   name_in.set_sensitive(FALSE); // Disables these elements so the user doesnt enter their name multiple times.
   button_score.set_sensitive(FALSE);
@@ -356,7 +366,7 @@ void ColonyWindow::start_power_spend_dialog(Batteries* Battery)
   label0->set_padding(10,10);
   label0->show();
   
-  Gtk::Label *label1= new Gtk::Label("Hydrolysis - Gain Oxygen");
+  Gtk::Label *label1= new Gtk::Label("Hydrolysis - Gain Oxygen\n Each power spent gives "+std::to_string(OXYGEN_PER_POWER)+" oxygen.");
   dialog->get_content_area()->pack_start(*label1);
   label1->set_padding(5,5);
   label1->show();
@@ -367,7 +377,7 @@ void ColonyWindow::start_power_spend_dialog(Batteries* Battery)
   dialog->get_content_area()->pack_start(*Scale1);
   Scale1->show();
 
-  Gtk::Label *label2= new Gtk::Label("Refine Metal");
+  Gtk::Label *label2= new Gtk::Label("Refine Metal\nIt takes "+std::to_string(POWER_PER_REF)+" and "+std::to_string(RAW_PER_REF)+" raw to make 1 ref.");
   dialog->get_content_area()->pack_start(*label2);
   label2->set_padding(5,5);
   label2->show();
@@ -512,7 +522,12 @@ Miner::Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* 
 }
 void Miner::do_work()
 {
-  std::cout<<"Miner "<<name<<"- Working!"<<std::endl;
+  if(stress<STRESS_THRESHOLD)
+    {
+      *rawPtr += MINER_RAW;
+      *CoalPtr += MINER_COAL;
+    }
+  stress += STRESS_ON_WORK;
 }
 //__Caretaker
 Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(Coal, Oxygen, GeneratorList)

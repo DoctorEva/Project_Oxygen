@@ -24,6 +24,9 @@
 #define RAW_PER_REF 2 // How much raw metal makes 1 refined metal.
 // Caretaker
 #define CARETAKER_EFFECT 80 // How much stress caretakers reduce.
+// Miner
+#define MINER_RAW 1 // How much raw is found per mining job.
+#define MINER_COAL 2 // How much coal is found per mining job.
 
 class Batteries
 {
@@ -100,6 +103,7 @@ public:
 
     // Used to read in data from a file, every line is recorded in a vector.
     static std::vector<std::string> read_file(std::string filename);
+    static void output_file(std::vector<std::string> data);
 
 protected:
     //____________ GUI STUFF ____________________
