@@ -12,7 +12,7 @@ std::vector<std::string> ColonyWindow::read_file(std::string filename)
   std::ifstream input;
   std::string line;
   input.open(filename);
-  
+
   if(!input.is_open())
     {
       std::cout<<"File failed to load"<<std::endl;
@@ -28,7 +28,7 @@ std::vector<std::string> ColonyWindow::read_file(std::string filename)
 }
 
 ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
-{ 
+{
   HighScores = HighScoreValues;
     this->set_title("~~~Project Oxygen~~~");
     this->set_border_width(10);
@@ -52,7 +52,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 
     button_score.set_sensitive(FALSE); // Enabled in end_game(), if victory is acheived.
     name_in.set_sensitive(FALSE);
-    
+
     grid.show_all();
     add(grid);
 
@@ -86,7 +86,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	      {
 		Gtk::MessageDialog prompt_for_colonist(*this, "Do you want to call a new colonist today?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
 		prompt_for_colonist.set_secondary_text("It is currently day "+std::to_string(day)+"\nOxygen = "+std::to_string(oxygen)+"\nCoal = "+std::to_string(coal)+"\nRaw Metal= "+std::to_string(raw_metal)+"\nRefined Metal = "+std::to_string(ref_metal)+"\nColonists = "+std::to_string(Colonists.size())+"\nGenerators = "+std::to_string(Generators.size())+"\nCurrentPower / Power capacity = "+std::to_string(BB.Power)+"/"+std::to_string(BB.MaxPower));
-		
+
 		if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
 		  {
 		    create_colonist();
@@ -131,7 +131,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 	    // Let the user do a GUI that prompts the user for the amount of power to spend on a task.
 	    //Batteries spend power
 	    BB.hydrolysis(5); // Temporary, we just have 5 power going to Oxygen.
-	    
+
 	    oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
 	    day++;
 	  }
@@ -255,12 +255,12 @@ void ColonyWindow::on_button_score() // Should allow the user to submit their na
   HighScores.push_back(addition);
   // sorts list again
   sort_scores();
-  
+
   name_in.set_sensitive(FALSE); // Disables these elements so the user doesnt enter their name multiple times.
-  button_score.set_sensitive(FALSE); 
+  button_score.set_sensitive(FALSE);
 }
 
-//____________________Battery Class Implementation________________ 
+//____________________Battery Class Implementation________________
 Batteries::Batteries(int* oxygen, int* raw, int* ref)
 {
   OxygenPtr = oxygen;
@@ -272,7 +272,7 @@ Batteries::Batteries(int* oxygen, int* raw, int* ref)
 }
 void Batteries::refine_metal(int amount) // Amount is the amount of power to spend. //Michael // Tommy
 {
-  int ref_possible = amount / POWER_PER_REF; // So, if Amount = 17 but a ref takes 5 power to make, use up to 15 power. 
+  int ref_possible = amount / POWER_PER_REF; // So, if Amount = 17 but a ref takes 5 power to make, use up to 15 power.
   for(int i = 0; i<ref_possible && Power > POWER_PER_REF && *RawPtr > RAW_PER_REF; i++)
     {
       Power -= POWER_PER_REF;
@@ -285,7 +285,7 @@ void Batteries::hydrolysis(int amount) // Amount is the amount of power to spend
   for(int i = 0; i<amount && Power > 0; i++)
     {
       Power--;
-      *OxygenPtr += OXYGEN_PER_POWER; 
+      *OxygenPtr += OXYGEN_PER_POWER;
     }
 }
 //___________________Generator Class Implementation________________
@@ -391,6 +391,17 @@ void Miner::do_work()
 Caretaker::Caretaker(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, std::vector<Colonist*>* PeopleList):Colonist(Coal, Oxygen, GeneratorList)
 {
   PatientList = PeopleList;
+}
+Colonist* Caretaker::find_most_stressed()//Andrea 
+{
+  Patient=&(*PatientList)[0];
+  int highest_stress;
+  for(int i=1,highest_stress=Patient->stress;i<PatientList->size();i++)
+  {
+    highest_stress=(*PatientList)[0].stress;
+    Patient=&(*PatientList)[i];
+  }
+  return Patient;
 }
 void Caretaker::do_work()
 {
