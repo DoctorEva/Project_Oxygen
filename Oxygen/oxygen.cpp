@@ -129,8 +129,9 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 		Generators[j].charge_batteries();
 	      }
 	    // Let the user do a GUI that prompts the user for the amount of power to spend on a task.
-	    //Batteries spend power
-	    BB.hydrolysis(5); // Temporary, we just have 5 power going to Oxygen.
+	    //Batteries spend power, if they have any.
+	    if(BB.Power)
+	      start_power_spend_dialog(&BB);
 
 	    oxygen -= Colonists.size() * COLONISTS_DAILY_OXYGEN;
 	    day++;
@@ -304,9 +305,9 @@ void ColonyWindow::on_change_assignment(Gtk::Button* button, int i)
 {
   Gtk::Window w;
   Gtk::Dialog *dialog = new Gtk::Dialog();
-  dialog->resize(200,200);
+  dialog->resize(300,100);
   dialog->set_transient_for(w);
-  dialog->set_title("~~What do you need?~~");
+  dialog->set_title("~Change Assignment~");
 
   Gtk::Label *label= new Gtk::Label("Select an assignment to assign.");
   dialog->get_content_area()->pack_start(*label);
@@ -337,6 +338,50 @@ void ColonyWindow::on_change_assignment(Gtk::Button* button, int i)
   dialog->close();
   delete(dialog);
 }
+void ColonyWindow::start_power_spend_dialog(Batteries* Battery)
+{
+  Gtk::Window w;
+  Gtk::Dialog *dialog = new Gtk::Dialog();
+  dialog->resize(300,100);
+  dialog->set_transient_for(w);
+  dialog->set_title("~Spend Power~");
+  dialog->add_button("Confirm",0);
+
+  Gtk::Label *label0= new Gtk::Label("Assign how much power you'd like to spend!\nCurrent Power: "+std::to_string(Battery->Power)+"/"+std::to_string(Battery->MaxPower));
+  dialog->get_content_area()->pack_start(*label0);
+  label0->set_padding(10,10);
+  label0->show();
+  
+  Gtk::Label *label1= new Gtk::Label("Hydrolysis - Gain Oxygen");
+  dialog->get_content_area()->pack_start(*label1);
+  label1->set_padding(5,5);
+  label1->show();
+
+  Gtk::Scale *Scale1 = new Gtk::Scale();
+  Scale1->set_range(0,Battery->Power);
+  Scale1->set_digits(0);
+  dialog->get_content_area()->pack_start(*Scale1);
+  Scale1->show();
+
+  Gtk::Label *label2= new Gtk::Label("Refine Metal");
+  dialog->get_content_area()->pack_start(*label2);
+  label2->set_padding(5,5);
+  label2->show();
+
+  Gtk::Scale *Scale2 = new Gtk::Scale();
+  Scale2->set_range(0,Battery->Power);
+  Scale2->set_digits(0);
+  dialog->get_content_area()->pack_start(*Scale2);
+  Scale2->show();
+  dialog->run();
+  
+  Battery->hydrolysis(Scale1->get_value());
+  Battery->refine_metal(Scale2->get_value());
+  
+  dialog->close();
+  delete(dialog);
+}
+
 
 //____________________Battery Class Implementation________________
 Batteries::Batteries(int* oxygen, int* raw, int* ref)

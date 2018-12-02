@@ -122,6 +122,7 @@ protected:
     void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
     void stress_all_colonists(int amount); // Stresses all colonists. Can also destress.
     void start_change_assignment_dialog();
+    void start_power_spend_dialog(Batteries* Battery);
 
 
  };
