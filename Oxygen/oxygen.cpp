@@ -26,9 +26,18 @@ std::vector<std::string> ColonyWindow::read_file(std::string filename)
   input.close();
   return all;
 }
-void ColonyWindow::output_file(std::vector<std::string data)
+void ColonyWindow::output_file(std::vector<std::string> data, std::string filename)
 {
+  std::ofstream output;
+  std::string line;
+  output.open(filename);
 
+  for(int i=0;i<data.size();i+=2)
+    {
+      line = data[i] + " " +data[i+1]+"\n";
+      output<<line;
+    }
+  output.close();
 }
 ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 {
@@ -162,7 +171,7 @@ int ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
       dialog.run();
       return 1;
     }
-  if(Colonists.size() == COLONISTS_TO_WIN) // Win
+  if(Colonists.size() != COLONISTS_TO_WIN) // Win
     {
       Gtk::MessageDialog dialog(*this, "INDEPENDENCE: Victory!\n", false, Gtk::MESSAGE_INFO);
       dialog.set_secondary_text("Your colony is now able to run without your help, well done!\nDays to independence: "+std::to_string(day));
@@ -269,7 +278,8 @@ void ColonyWindow::on_button_score() // Should allow the user to submit their na
   HighScores.push_back(std::to_string(day));
   // sorts list again
   sort_scores();
-  // To do: Outputs HighScores to file.
+  // Outputs HighScores to file.
+  output_file(HighScores, "High Scores List");
 
   name_in.set_sensitive(FALSE); // Disables these elements so the user doesnt enter their name multiple times.
   button_score.set_sensitive(FALSE);

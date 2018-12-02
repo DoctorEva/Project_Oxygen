@@ -103,7 +103,7 @@ public:
 
     // Used to read in data from a file, every line is recorded in a vector.
     static std::vector<std::string> read_file(std::string filename);
-    static void output_file(std::vector<std::string> data);
+    static void output_file(std::vector<std::string> data, std::string filename);
 
 protected:
     //____________ GUI STUFF ____________________
