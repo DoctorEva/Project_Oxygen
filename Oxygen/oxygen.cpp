@@ -83,7 +83,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
     Generator FirstGenerator(&oxygen, &BB, 1);
     Generators.push_back(FirstGenerator);
 
-    create_colonist(); // First Colonist.
+    create_colonist(&BB); // First Colonist.
     // Begin the game running thing.
     int i = 1;
     while(i)
@@ -101,7 +101,7 @@ ColonyWindow::ColonyWindow(std::vector<std::string> HighScoreValues)
 
 		if(prompt_for_colonist.run() == Gtk::RESPONSE_YES)
 		  {
-		    create_colonist();
+		    create_colonist(&BB);
 		    stress_all_colonists(-5);
 		  }
 	      }
@@ -183,7 +183,7 @@ int ColonyWindow::end_game() // Ends the game if a loss or win condition is met.
     }
   return 0;
 }
-void ColonyWindow::create_colonist() // Tommy
+void ColonyWindow::create_colonist(Batteries* BB) // Tommy
 {
   Gtk::Window w;
   Gtk::Dialog *dialog = new Gtk::Dialog();
@@ -215,7 +215,7 @@ void ColonyWindow::create_colonist() // Tommy
       break;
     case 1:
       // Engineer
-      NewGuy = new Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal, &BB);
+      NewGuy = new Engineer(&coal, &oxygen, &Generators, &raw_metal, &ref_metal, BB);
       NewGuy->name = "Engineer ";
       break;
     case 2:
@@ -530,14 +530,14 @@ void Engineer::do_work()
     }
   stress += STRESS_ON_WORK;
 }
-void build_generator(int efficiency)
+void Engineer::build_generator(int efficiency)
 {
   Generator NewGen(OxygenPtr, battery, efficiency);
-  *GeneratorList -> push_back(NewGen);
+  GenAccess->push_back(NewGen);
 }
-void build_battery()
+void Engineer::build_battery()
 {
-  *battery->MaxPower += CAPACITY_PER_BATTERY;
+  battery->MaxPower += CAPACITY_PER_BATTERY;
 }
 //__Miner
 Miner::Miner(int* Coal, int* Oxygen,std::vector<Generator>* GeneratorList, int* raw):Colonist(Coal, Oxygen, GeneratorList)

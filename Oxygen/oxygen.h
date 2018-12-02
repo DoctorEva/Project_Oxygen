@@ -19,7 +19,7 @@
 #define COAL_PER_BURN 2// How much coal is burnt in burning coal at max.
 #define OXYGEN_PER_BURN 5// How much O2 is burnt per burning coal.
 // Battery action definitions.
-#define OXYGEN_PER_POWER 2// How much O2 is given per power spent.
+#define OXYGEN_PER_POWER 5// How much O2 is given per power spent.
 #define POWER_PER_REF 5 // How much power does it take to make 1 refined metal.
 #define RAW_PER_REF 2 // How much raw metal makes 1 refined metal.
 // Caretaker
@@ -132,7 +132,7 @@ protected:
     std::vector<Generator> Generators;
     
     int end_game(); // Returns true if an end condition is met.
-    void create_colonist(); // Should let you decide their job, and reduce stress of all colonists
+    void create_colonist(Batteries* BB); // Should let you decide their job, and reduce stress of all colonists
     void stress_all_colonists(int amount); // Stresses all colonists. Can also destress.
     void start_change_assignment_dialog();
     void start_power_spend_dialog(Batteries* Battery);
