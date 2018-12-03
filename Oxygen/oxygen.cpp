@@ -420,7 +420,7 @@ Batteries::Batteries(int* oxygen, int* raw, int* ref)
 void Batteries::refine_metal(int amount) // Amount is the amount of power to spend. //Michael // Tommy
 {
   int ref_possible = amount / POWER_PER_REF; // So, if Amount = 17 but a ref takes 5 power to make, use up to 15 power.
-  for(int i = 0; i<ref_possible && Power > POWER_PER_REF && *RawPtr > RAW_PER_REF; i++)
+  for(int i = 0; i<ref_possible && Power >= POWER_PER_REF && *RawPtr >= RAW_PER_REF; i++)
     {
       Power -= POWER_PER_REF;
       *RefPtr += 1;
