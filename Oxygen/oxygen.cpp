@@ -387,7 +387,7 @@ void ColonyWindow::start_power_spend_dialog(Batteries* Battery)
   dialog->get_content_area()->pack_start(*Scale1);
   Scale1->show();
 
-  Gtk::Label *label2= new Gtk::Label("Refine Metal\nIt takes "+std::to_string(POWER_PER_REF)+" and "+std::to_string(RAW_PER_REF)+" raw to make 1 ref.");
+  Gtk::Label *label2= new Gtk::Label("Refine Metal\nIt takes "+std::to_string(POWER_PER_REF)+" power and "+std::to_string(RAW_PER_REF)+" raw to make 1 ref.\nYour raw metal : "+std::to_string(raw_metal));
   dialog->get_content_area()->pack_start(*label2);
   label2->set_padding(5,5);
   label2->show();
@@ -526,7 +526,74 @@ void Engineer::do_work()
 {
   if(stress < STRESS_THRESHOLD)
     {
-      // Display a GUI that allows you to pick one of Engineer's build functions, or reassign job.
+      Gtk::Window w;
+      Gtk::Dialog *dialog = new Gtk::Dialog();
+      dialog->resize(300,100);
+      dialog->set_transient_for(w);
+      dialog->set_title("~Engineer Job~");
+
+      Gtk::Label *label1= new Gtk::Label("What would you like "+name+" to build? Avaliable options below.\n   Low generators cost "+std::to_string(LOW_GENERATOR_COST)+" raw metal\n   High efficiency generators cost "+std::to_string(HIGH_GENERATOR_COST)+" refined metal\n   New batteries cost "+std::to_string(BATTERY_COST)+" raw metal.");
+      dialog->get_content_area()->pack_start(*label1);
+      label1->set_padding(15,15);
+      label1->show();
+
+      
+      if(*rawPtr >= LOW_GENERATOR_COST)
+	dialog->add_button("Build a Low Efficiency Generator", 0);
+      if(*refPtr >= HIGH_GENERATOR_COST)
+	dialog->add_button("Build a High Efficiency Generator", 1);
+      if(*rawPtr >= BATTERY_COST)
+	dialog->add_button("Build a Battery", 2);
+      dialog->add_button("Reassign Job",3);
+      int choice = dialog->run();
+      switch(choice)
+	{
+	case 0:
+	  std::cout<<"Low generator built"<<std::endl;
+	  *rawPtr -= LOW_GENERATOR_COST;
+	  build_generator(1);
+	  break;
+	case 1:
+	  std::cout<<"High generator built"<<std::endl;
+	  *refPtr -= HIGH_GENERATOR_COST;
+	  build_generator(2);
+	  break;
+	case 2:
+	  std::cout<<"Battery built"<<std::endl;
+	  *rawPtr -= BATTERY_COST;
+	  build_battery();
+	  break;
+	default:
+	  //Gtk::Window v;
+	  Gtk::Dialog *dialog1 = new Gtk::Dialog();
+	  dialog->resize(300,100);
+	  dialog->set_transient_for(w);
+	  dialog->set_title("~Reassign Job~");
+	  
+	  Gtk::Label *label2= new Gtk::Label("Please select a new job for "+name);
+	  dialog1->get_content_area()->pack_start(*label2);
+	  label2->set_padding(15,15);
+	  label2->show();
+	  dialog1->add_button("Rest",0);
+	  dialog1->add_button("Deliver Coal", 2);
+	  int choice = dialog1->run();
+	  if(choice == 2)
+	    {
+	      add_coal();
+	      assignment = 2;
+	    }
+	  else
+	    {
+	      rest();
+	      assignment = 0;
+	    }
+	  dialog1->close();
+	  delete(dialog1);
+	  break;
+	}
+      dialog->close();
+      delete(dialog);
+      
     }
   stress += STRESS_ON_WORK;
 }
